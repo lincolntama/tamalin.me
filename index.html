@@ -446,7 +446,7 @@
     </div>
   </footer>
 
-  <!-- Script logic -->
+<!-- Script logic -->
   <script>
     // Initialize Lucide Icons
     lucide.createIcons();
@@ -468,11 +468,8 @@
       "Posisi ku sekarang lagi botak awokkkokwokwkowko",
       "Abdi teh suka Kamer Rider Decade dri lahir:3",
       "Ngantuk hoooaaaaammmm",
-      "Berpengalaman sebagai pembully}:)",
       "The next HOST",
       "2029 jadi president aamiin"
-
-    
     ];
 
     const modal = document.getElementById('fact-modal');
@@ -499,10 +496,17 @@
       if (e.target === modal) closeModal();
     });
 
-    // ===============================================
-    // LOCAL STORAGE & FILE EXPORT MANAGEMENT (KONTAK)
-    // ===============================================
+    // Helper Function to Prevent XSS
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
+    // LOCAL STORAGE & FILE EXPORT MANAGEMENT
     function getStoredContacts() {
       const stored = localStorage.getItem('lincoln_contacts');
       return stored ? JSON.parse(stored) : [];
@@ -566,81 +570,50 @@
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
           <td class="p-3 font-medium text-slate-400">${idx + 1}</td>
           <td class="p-3 font-semibold text-slate-800 dark:text-slate-100">${escapeHtml(c.nama)}</td>
-          <td class="p-3 text-cyan-600 dark:text-cyan-400 font-mono font-medium">${escapeHtml(c.sosmed)}</td>
-          <td class="p-3 text-slate-500 dark:text-slate-400">${escapeHtml(c.catatan)}</td>
+          <td class="p-3 text-cyan-500 font-medium">${escapeHtml(c.sosmed)}</td>
+          <td class="p-3 text-slate-600 dark:text-slate-400">${escapeHtml(c.catatan)}</td>
           <td class="p-3 text-xs text-slate-400">${c.waktu}</td>
         </tr>
       `).join('');
     }
 
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    // Export Data to CSV File Download
-    function exportCSV() {
-      const contacts = getStoredContacts();
-      if (contacts.length === 0) {
-        alert("Belum ada data kontak untuk di-export!");
-        return;
-      }
-
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "No,Nama,Akun IG/Sosmed,Catatan,Waktu Input\n";
-
-      contacts.forEach((c, idx) => {
-        const row = [
-          idx + 1,
-          `"${c.nama.replace(/"/g, '""')}"`,
-          `"${c.sosmed.replace(/"/g, '""')}"`,
-          `"${c.catatan.replace(/"/g, '""')}"`,
-          `"${c.waktu}"`
-        ].join(",");
-        csvContent += row + "\n";
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "data_kontak_lincoln.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    // Export Data to JSON File Download
-    function exportJSON() {
-      const contacts = getStoredContacts();
-      if (contacts.length === 0) {
-        alert("Belum ada data kontak untuk di-export!");
-        return;
-      }
-
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(contacts, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "data_kontak_lincoln.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.removeChild();
-    }
-
     function clearContacts() {
-      if (confirm("Apakah Anda yakin ingin menghapus semua rekap kontak?")) {
+      if (confirm('Apakah kamu yakin ingin menghapus semua data kontak tersimpan?')) {
         localStorage.removeItem('lincoln_contacts');
         renderContactTable();
       }
     }
 
-    // Load saved data on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      renderContactTable();
-    });
+    function exportJSON() {
+      const contacts = getStoredContacts();
+      if (contacts.length === 0) return alert('Belum ada data untuk di-export!');
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(contacts, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "kontak_lincoln.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function exportCSV() {
+      const contacts = getStoredContacts();
+      if (contacts.length === 0) return alert('Belum ada data untuk di-export!');
+      let csvContent = "data:text/csv;charset=utf-8,No,Nama,Sosmed,Catatan,Waktu\n";
+      contacts.forEach((c, i) => {
+        csvContent += `"${i+1}","${c.nama}","${c.sosmed}","${c.catatan}","${c.waktu}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'kontak_lincoln.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    // Render table initially
+    renderContactTable();
   </script>
 </body>
 </html>
